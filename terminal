@@ -1,0 +1,220 @@
+jmpi start #jump to the start of code
+<U32> "F:os"
+nop
+nop
+nop
+nop
+nop
+nop
+nop #terminal command storage space
+nop #temporary filename storage space
+nop
+nop
+nop
+nop
+nop
+nop #ASCII LUT in 5*6 format
+<U32> 0b000000000000000000000000000000  #null
+<U32> 0b000000101000000100010111000000  #smiley
+<U32> 0b111111010111111011101000111111 #inverted smiley
+<U32>4-1
+<U32>5-1
+<U32>6-1
+<U32>7-1
+<U32>8-1
+<U32>9-1
+<U32>10-1
+<U32>11-1
+<U32>12-1
+<U32>13-1
+<U32>14-1
+<U32>15-1
+<U32>16-1
+<U32>17-1
+<U32>18-1
+<U32>19-1
+<U32>20-1
+<U32>21-1
+<U32>22-1
+<U32>23-1
+<U32>24-1
+<U32>25-1
+<U32>26-1
+<U32>27-1
+<U32>28-1
+<U32>29-1
+<U32>30-1
+<U32>31-1
+<U32>32-1
+<U32> 0b000000000000000000000000000000  #space
+<U32> 0b111111000110001100011000111111  #0
+<U32> 0b001000110010100001000010011111  #1
+<U32> 0b011101000100010001000100011111  #2
+<U32> 0b111100000100001111110000111110  #3
+<U32> 0b100011000110001111110000100001  #4
+<U32> 0b111111000010000111100000111110  #5
+<U32> 0b011101000010000011101000101110  #6
+<U32> 0b111110000100010001000100010000  #7
+<U32> 0b011101000110001011101000101110  #8
+<U32> 0b011101000110001011100000101110  #9
+<U32> 0b001000101010001111111000110001  #A
+<U32> 0b111101000110001111101000111110  #B
+<U32> 0b011111000010000100001000001111  #c
+<U32> 0b111101000110001100011000111110  #D
+<U32> 0b111111000010000111111000011111  #E
+# add FGHIJKLMNOPQRSTUVWXYZ,abcdefghijklmnopqrstuvwxyz 
+
+
+#dword 272
+<U32> "echo"  
+<U480> "print a file"                 #4 commands with arguments
+<U32> "mlem"  
+<U480> "edit the binary of a file"
+<U32> "open"  
+<U480> "opens a folder"
+<U32> "exec"  
+<U480> "executes a file"
+<U32> "esc_"  
+<U480> "exit terminal"                #4 commands without arguments
+<U32> "help"  
+<U480> "list valid commands"
+<U32> "back"  
+<U480> "exits the current folder"
+<U32> "list"  
+<U480> "list files and folders"
+#dword 400  (1600 bytes)
+<U512> "wrong number of arguments, expected one"      #command errors
+<U512> "wrong number of arguments, expected zero"
+<U512> "invalid file or folder"
+<U512> "invalid command. type 'help' for all possible commands"
+
+keyerror_terminal__os:   #check for error
+    cmp r4,0
+    bnei 9
+    loadi 1600 r0
+    loadi 1604 r1
+    loadi 1608 r2
+    loadi 1612 r3
+    loadi 1616 r4
+    loadi 1620 r5
+    loadi 1624 r6
+    loadi 1628 r7
+    call print__gpu:
+    jmp terminal_quit__os
+
+echo_terminal__os:
+call keyerror_terminal__os
+# filename is in r6-r9
+sub r3,r3,r3
+sub r4,r4,r4
+sub r5,r5,r5
+
+
+mlem_terminal__os:
+call keyerror_terminal__os
+    
+open_terminal__os:
+call keyerror_terminal__os
+
+exec_terminal__os
+call keyerror_terminal__os
+
+esc__terminal__os:
+#SHOULD NEVER BE CALLED
+
+help_terminal__os:
+
+
+back_terminal__os:
+
+
+list_terminal__os:
+
+
+terminal__os:
+    sub r1,r1,r1
+    addi r1,36,r1
+    key r0
+    cmpi r0,enter   #ADD NEWLINE VALUE HERE
+    beqi 7
+    cmpi r0,0
+    beqi -4
+    addi r1,1,r1
+    8store r1,r0
+    cmpi r1,64
+    bgei 1
+    brai -9
+
+    loadi 36,r1
+    loadi 40,r4
+    loadi 44,r5
+    loadi 48,r6
+    loadi 52,r7
+    loadi 56,r8
+    loadi 60,r9
+
+    sub r3,r3,r3   #check for commands with operands
+    loadi 1088,r2
+    cmp r1,r2
+    bnei 1
+    calli echo_terminal__os
+    loadi 1152,r2
+    cmp r1,r2
+    bnei 1
+    calli mlem_terminal__os
+    loadi 1216,r2
+    cmp r1,r2
+    bnei 1
+    calli open_terminal__os
+    loadi 1280,r2
+    cmp r1,r2
+    bnei 1
+    calli exec_terminal__os
+
+
+    cmp r4,0
+    bei 9
+    loadi 1664, r0
+    loadi 1668, r1
+    loadi 1672, r2
+    loadi 1676, r3
+    loadi 1680, r4
+    loadi 1684, r5
+    loadi 1688, r6
+    loadi 1692, r7
+    calli print__gpu
+
+    loadi 1344,r2  #check for commands without operands
+    cmp r1,r2
+    bnei 1
+    brai 21 
+    loadi 1408,r2
+    cmp r1,r2
+    bnei 1
+    addi r3,6,r3
+    loadi 1472,r2
+    cmp r1,r2
+    bnei 1
+    addi r3,7,r3
+    loadi 1536,r2
+    cmp r1,r2
+    bnei 1
+    addi r3,8,r3
+    
+    #error handling
+    loadi 1792, r0
+    loadi 1796, r1
+    loadi 1800, r2
+    loadi 1804, r3
+    loadi 1808, r4
+    loadi 1812, r5
+    loadi 1816, r6
+    loadi 1820, r7
+    calli print_gpu
+
+    terminal_quit__os:
+    ret
+
+        #this allows printing 512-bit strings(64 characters)
+
+start:
